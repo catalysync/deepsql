@@ -9,7 +9,7 @@ import styles from './SavedQueriesPanel.module.css'
 import { savedDashboardsAPI } from '@/lib/api/client'
 
 // Lazy load Monaco Editor for better performance
-const Editor = lazy(() => import('@monaco-editor/react'))
+const Editor = lazy(() => import('@/lib/monacoEditor'))
 
 export default function SavedDashboardsPanel({
     connectionId,

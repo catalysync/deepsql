@@ -153,7 +153,7 @@ import SavedQueriesPanel from "@/components/SavedQueriesPanel";
 import { saveTabState, loadTabState, saveSchemaCache, loadSchemaCache, clearSchemaCache } from "@/utils/tabStateCache";
 
 // Lazy load Monaco Editor for better performance
-const Editor = lazy(() => import("@monaco-editor/react"));
+const Editor = lazy(() => import("@/lib/monacoEditor"));
 
 const SQL_STATEMENT_START = /^\s*(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|ALTER|DROP|TRUNCATE|REPLACE|EXPLAIN|SHOW|CALL|EXEC|MERGE|UPSERT)\b/i;
 

@@ -8,7 +8,7 @@ import { savedDashboardsAPI } from '@/lib/api/client'
 import { useDashboardChatStore, useDashboardSession, useDashboardChatActions } from '@/lib/stores/useDashboardChatStore'
 import styles from './DashboardWorkspace.module.css'
 
-const Editor = lazy(() => import('@monaco-editor/react'))
+const Editor = lazy(() => import('@/lib/monacoEditor'))
 
 // Icon per agent step phase, so the live trace reads at a glance.
 const STEP_ICON = { grounding: Brain, planning: PencilRuler, sql: Database, validating: ClipboardCheck, done: Check }

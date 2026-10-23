@@ -8,7 +8,7 @@ import { renderInput } from './DashboardInputs'
 import styles from './DashboardBuilder.module.css'
 
 // Lazy load Monaco Editor for better performance
-const Editor = lazy(() => import('@monaco-editor/react'))
+const Editor = lazy(() => import('@/lib/monacoEditor'))
 
 export default function DashboardBuilder({ connectionId, dashboardConfig, onRefresh, onClear, setDashboardConfig, onSave }) {
     const [dashboardData, setDashboardData] = useState(null)

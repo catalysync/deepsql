@@ -28,6 +28,7 @@ import {
 
 const REPO = 'DeepSQLAI/deepsql'
 const TAG_PREFIX = 'desktop-v'
+const RELEASE_LOOKUP_ENABLED = false
 
 const PLATFORMS = {
   mac: { label: 'macOS', icon: Apple },
@@ -107,10 +108,13 @@ function latestDesktopRelease(releases) {
 }
 
 export default function Download() {
-  const [state, setState] = useState({ status: 'loading' })
+  // Crate fork: no browser-side call to api.github.com. The page renders the
+  // 'none' state, which links to the releases page for a manual download.
+  const [state, setState] = useState({ status: RELEASE_LOOKUP_ENABLED ? 'loading' : 'none' })
   const detected = useMemo(() => detectPlatform(), [])
 
   useEffect(() => {
+    if (!RELEASE_LOOKUP_ENABLED) return undefined
     let cancelled = false
 
     fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, {

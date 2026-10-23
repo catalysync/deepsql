@@ -7,7 +7,7 @@ import styles from './ExplainPlanTab.module.css'
 import { saveTabState, loadTabState } from '@/utils/tabStateCache'
 
 // Lazy load Monaco Editor for better performance
-const Editor = lazy(() => import('@monaco-editor/react'))
+const Editor = lazy(() => import('@/lib/monacoEditor'))
 
 const DIAGRAM_NODE_WIDTH = 240
 const DIAGRAM_NODE_HEIGHT = 120
