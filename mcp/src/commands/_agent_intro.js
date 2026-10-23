@@ -182,7 +182,14 @@ function compareSemver(a, b) {
 
 // Best-effort latest-version lookup from the npm registry, with a tight timeout
 // so it never noticeably delays startup. Resolves null on any failure.
-function fetchLatest(timeoutMs = 1200) {
+// Crate fork: the npm registry lookup is disabled; always resolves null, so
+// the intro shows the plain local version. See docs/crate/TELEMETRY-REMOVED.md.
+function fetchLatest() {
+  return Promise.resolve(null);
+}
+
+// eslint-disable-next-line no-unused-vars
+function fetchLatestFromRegistry(timeoutMs = 1200) {
   return new Promise((resolve) => {
     let done = false;
     const finish = (v) => {

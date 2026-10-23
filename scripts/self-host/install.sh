@@ -516,6 +516,12 @@ install_deepsql_cli() {
 }
 
 setup_deepsql_cli() {
+  # Crate fork: no npm install of the vendor CLI and no `npm view` version
+  # check. The CLI can be run from this checkout (mcp/) instead.
+  echo "DeepSQL CLI: skipped (Crate fork makes no npm registry calls)."
+  echo
+  return 0
+
   if ! command -v npm >/dev/null 2>&1; then
     echo "DeepSQL CLI: npm not found — skipping install."
     echo "  The CLI is optional; install Node 20+ then: npm i -g @deepsql/mcp"
