@@ -36,6 +36,13 @@ services:
       VECTOR_STORE_EMBEDDING_DIMENSIONS: ${VECTOR_STORE_EMBEDDING_DIMENSIONS:-768}
       EMBEDDING_FAIL_OPEN: "true"
       AZURE_SEARCH_ENABLED: "false"
+      # Privacy defaults: stop the background jobs that read real column values
+      # (sample value, min/max, top-10 values, DISTINCT lists) and put them in
+      # LLM prompts and embeddings. Chat answers still send result rows.
+      # See docs/crate/EVALUATION.md, "What goes to the LLM".
+      SPRING_AI_COLUMN_VALUES_BACKGROUND_SAMPLING_ENABLED: ${DEEPSQL_COLUMN_SAMPLING:-false}
+      APP_PIPELINE_ENABLED: ${DEEPSQL_VALUE_PIPELINE:-false}
+      BRAIN_PROFILE_MAX_TABLES: ${DEEPSQL_PROFILE_MAX_TABLES:-0}
     depends_on:
       ollama:
         condition: service_started
