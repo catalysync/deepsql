@@ -7,14 +7,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class TelemetryPropertiesTest {
 
     @Test
-    void enabledByDefault() {
+    void disabledByDefaultInCrateFork() {
         TelemetryProperties props = new TelemetryProperties();
-        assertTrue(props.isEffectivelyEnabled(null, null));
+        assertFalse(props.isEffectivelyEnabled(null, null));
+        assertEquals("", props.getPosthogHost());
     }
 
     @Test
     void disabledByDoNotTrackEnvVar() {
         TelemetryProperties props = new TelemetryProperties();
+        props.setEnabled(true);
         assertFalse(props.isEffectivelyEnabled("1", null));
         assertFalse(props.isEffectivelyEnabled("true", null));
     }
@@ -22,6 +24,7 @@ class TelemetryPropertiesTest {
     @Test
     void disabledByDeepsqlOptOut() {
         TelemetryProperties props = new TelemetryProperties();
+        props.setEnabled(true);
         assertFalse(props.isEffectivelyEnabled(null, "1"));
         assertFalse(props.isEffectivelyEnabled(null, "true"));
     }

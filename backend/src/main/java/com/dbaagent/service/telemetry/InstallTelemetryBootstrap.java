@@ -6,7 +6,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
@@ -17,7 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@Component
+// Crate fork: not a Spring bean, so it never runs (no install identity row,
+// no heartbeat). See docs/crate/TELEMETRY-REMOVED.md.
 @RequiredArgsConstructor
 @Slf4j
 public class InstallTelemetryBootstrap {

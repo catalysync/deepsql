@@ -15,9 +15,10 @@ import org.springframework.stereotype.Component;
 @Data
 public class TelemetryProperties {
 
-    private boolean enabled = true;
+    // Crate fork: off by default, and the sink is always NoOp (TelemetryConfig).
+    private boolean enabled = false;
     private String posthogProjectKey = "";
-    private String posthogHost = "https://us.i.posthog.com";
+    private String posthogHost = "";
 
     public boolean isEffectivelyEnabled(String doNotTrack, String deepsqlOptOut) {
         if (isTruthy(doNotTrack)) return false;

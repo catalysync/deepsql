@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.lang.management.ManagementFactory;
@@ -32,7 +31,8 @@ import java.util.Map;
  * Each probe is independently guarded and time-bounded so a single sick
  * dependency can neither stall nor fail the heartbeat.
  */
-@Component
+// Crate fork: not a Spring bean, so it never runs (no install identity row,
+// no heartbeat). See docs/crate/TELEMETRY-REMOVED.md.
 @Slf4j
 public class InstallHeartbeatJob {
 
