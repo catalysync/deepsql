@@ -7,7 +7,8 @@
  * machine is offline the stack falls through to the system UI font, which is
  * why the fallbacks are spelled out rather than left to `sans-serif`.
  */
-@import url("https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;600;700;800&display=swap");
+/* Crate fork: no Google Fonts fetch; Maven Pro is used if installed locally,
+ * otherwise the system UI stack below. */
 
 :root {
   --font-family-sans: "Maven Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,

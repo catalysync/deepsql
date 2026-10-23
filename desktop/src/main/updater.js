@@ -15,7 +15,15 @@ const path = require('node:path');
 const { app } = require('electron');
 const log = require('./logger');
 
+const UPDATES_DISABLED = true;
+
 function init() {
+  // Crate fork: auto-update is removed. No update feed is ever contacted,
+  // whatever DEEPSQL_UPDATE_FEED or app-update.yml say.
+  if (UPDATES_DISABLED) {
+    log.info('updater', 'auto-update disabled in this build');
+    return;
+  }
   if (!app.isPackaged) return;
 
   const feedUrl = process.env.DEEPSQL_UPDATE_FEED;
