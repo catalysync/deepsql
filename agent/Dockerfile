@@ -113,6 +113,11 @@ RUN chmod +x /opt/deepsql-agent/docker-entrypoint.sh \
     # Apply DeepSQL Agent branding to the API UI (idempotent overlay).
     && bash /opt/deepsql-agent/webui-overlay/apply-overlay.sh /opt/deepsql-agent/api || true
 
+# Crate fork: vendor the webui's CDN assets, tighten its CSP, hard-disable its
+# update check and extension registry, and drop the clones' .git dirs. Fails
+# the build loudly if an upstream bump moves a patch target.
+RUN bash /opt/deepsql-agent/webui-overlay/crate-no-egress.sh /opt/deepsql-agent/api /opt/deepsql-agent/runtime
+
 # Expose the agent API (:8787) and the secret-gated provisioner (:8788).
 EXPOSE 8787 8788
 

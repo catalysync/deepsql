@@ -73,6 +73,8 @@ mkdir -p "$AGENT_HOME/logs" "$AGENT_HOME/profiles" "$AGENT_HOME/webui"
 # Map the product home onto the upstream runtime's expected home path.
 # Operators never set this; the entrypoint owns it.
 export HERMES_HOME="$AGENT_HOME"
+# Crate fork: never pip-install optional runtime deps from PyPI at run time.
+export HERMES_DISABLE_LAZY_INSTALLS=1
 export HERMES_AGENT_DIR="$RUNTIME_DIR"
 # Some upstream paths hard-code $HERMES_HOME/hermes-agent — keep a symlink.
 ln -sfn "$RUNTIME_DIR" "$AGENT_HOME/hermes-agent"
@@ -119,12 +121,36 @@ cfg["model"] = {
     "base_url": os.environ["BASE_URL"],
     "api_key": os.environ["API_KEY"],
     "api_mode": "chat_completions",
-    "context_length": 272000,
+    # Crate fork: overridable so a Claude model gets its real window.
+    "context_length": int(os.environ.get("DEEPSQL_AGENT_CONTEXT_LENGTH") or 272000),
 }
 cfg.setdefault("providers", {})["custom"] = {
     "base_url": os.environ["BASE_URL"],
     "api_key": os.environ["API_KEY"],
+    # Crate fork: without this, the runtime infers api_mode from the host and
+    # switches api.anthropic.com to native Messages (which needs the anthropic
+    # SDK, lazily pip-installed from PyPI at first turn). Pin chat completions.
+    "api_mode": "chat_completions",
 }
+
+# Crate fork: no egress beyond the LLM endpoint and the DeepSQL backend.
+cfg.setdefault("security", {})["allow_lazy_installs"] = False
+cfg.setdefault("model_catalog", {})["enabled"] = False
+cfg.setdefault("models_dev", {})["url"] = "http://127.0.0.1:9/api.json"
+cfg.setdefault("telemetry", {}).setdefault("shared_metrics", {})["enabled"] = False
+
+# Crate fork: cheap tasks (compression, titles, search, approvals, reviews) go
+# to DEEPSQL_AGENT_AUX_MODEL on the same endpoint; defaults to the main model.
+aux_model = os.environ.get("DEEPSQL_AGENT_AUX_MODEL") or os.environ["MODEL"]
+aux = cfg.setdefault("auxiliary", {})
+for task in ("compression", "title_generation", "session_search", "approval",
+             "background_review", "curator"):
+    aux[task] = {
+        "model": aux_model,
+        "base_url": os.environ["BASE_URL"],
+        "api_key": os.environ["API_KEY"],
+        "api_mode": "chat_completions",
+    }
 
 # Strip any dashboard password — DeepSQL authenticates at nginx.
 dashboard = cfg.setdefault("dashboard", {})
@@ -159,7 +185,7 @@ cp -f "$AGENT_ROOT/SOUL.md" "$AGENT_HOME/SOUL.md"
 (
   cd "$RUNTIME_DIR"
   UV_NO_CONFIG=1 "$VENV_PY" -m hermes_cli.main tools disable \
-    terminal file code_execution browser computer_use image_gen tts vision web delegation cronjob \
+    terminal file code_execution browser computer_use image_gen tts vision web delegation cronjob bfl stt \
     >/dev/null 2>&1 || true
 )
 
