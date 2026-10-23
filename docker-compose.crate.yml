@@ -1,0 +1,63 @@
+# Crate overlay for the DeepSQL stack. Use with the upstream file:
+#
+#   docker compose -p deepsql-crate -f docker-compose.yml -f docker-compose.crate.yml up -d --build
+#
+# What it changes (see docs/crate/EVALUATION.md):
+#   - Chat goes to Anthropic's OpenAI-compatible endpoint (chat completions only;
+#     the Responses API is forced off because Anthropic does not implement it).
+#   - Embeddings come from a local Ollama running nomic-embed-text (768 dims), so
+#     no text is sent to a second vendor. Pull the model once:
+#       docker compose -p deepsql-crate -f docker-compose.yml -f docker-compose.crate.yml \
+#         exec ollama ollama pull nomic-embed-text
+#   - The agent container gets a Claude-sized context window.
+#   - The backend heap is capped by DEEPSQL_BACKEND_XMX (default 1g, upstream hard-codes 3g).
+# Secrets (the Anthropic key, DB and vault keys) stay in the gitignored .env.
+
+services:
+  backend:
+    entrypoint:
+      - java
+      - -XX:+UseZGC
+      - -Xmx${DEEPSQL_BACKEND_XMX:-1g}
+      - -XX:+ExitOnOutOfMemoryError
+      - -Djava.security.egd=file:/dev/./urandom
+      - -jar
+      - app.jar
+    environment:
+      DEEPSQL_CHAT_PROVIDER: openai
+      DEEPSQL_CHAT_ENDPOINT: ${DEEPSQL_CHAT_ENDPOINT:-https://api.anthropic.com/v1/}
+      DEEPSQL_CHAT_MODEL: ${DEEPSQL_CHAT_MODEL:-claude-sonnet-5-5}
+      DEEPSQL_CHAT_USE_RESPONSES_API: "false"
+      DEEPSQL_EMBEDDING_PROVIDER: openai
+      DEEPSQL_EMBEDDING_ENDPOINT: ${DEEPSQL_EMBEDDING_ENDPOINT:-http://ollama:11434/v1}
+      DEEPSQL_EMBEDDING_MODEL: ${DEEPSQL_EMBEDDING_MODEL:-nomic-embed-text}
+      DEEPSQL_EMBEDDING_API_KEY: ${DEEPSQL_EMBEDDING_API_KEY:-ollama-local}
+      VECTOR_STORE_TYPE: pgvector
+      VECTOR_STORE_EMBEDDING_DIMENSIONS: ${VECTOR_STORE_EMBEDDING_DIMENSIONS:-768}
+      EMBEDDING_FAIL_OPEN: "true"
+      AZURE_SEARCH_ENABLED: "false"
+    depends_on:
+      ollama:
+        condition: service_started
+
+  deepsql-agent:
+    environment:
+      DEEPSQL_CHAT_ENDPOINT: ${DEEPSQL_CHAT_ENDPOINT:-https://api.anthropic.com/v1/}
+      DEEPSQL_CHAT_MODEL: ${DEEPSQL_CHAT_MODEL:-claude-sonnet-5-5}
+      DEEPSQL_AGENT_AUX_MODEL: ${DEEPSQL_AGENT_AUX_MODEL:-claude-haiku-5-5}
+      DEEPSQL_AGENT_CONTEXT_LENGTH: ${DEEPSQL_AGENT_CONTEXT_LENGTH:-200000}
+
+  # Local embeddings. Idle RSS is small; the model adds a few hundred MB while
+  # loaded and is unloaded after OLLAMA_KEEP_ALIVE of inactivity.
+  ollama:
+    image: docker.io/ollama/ollama:0.12.6
+    restart: unless-stopped
+    environment:
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    volumes:
+      - dba-agent-ollama:/root/.ollama
+
+volumes:
+  dba-agent-ollama:
